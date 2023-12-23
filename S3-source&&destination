@@ -1,0 +1,49 @@
+import boto3
+
+def lambda_handler(event, context):
+    try:
+        # Check if the event contains information about the S3 object
+        if 'Records' in event and event['Records']:
+            # Extract the bucket and key from the S3 event
+            file_name = event['Records'][0]['s3']['object']['key']
+
+            service_name = 's3'
+            region_name = 'ap-south-1'
+            aws_access_key_id = 'AKIA24G6E4WP6LKTYCOG'
+            aws_secret_access_key = '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'
+
+            s3 = boto3.resource(
+                service_name=service_name,
+                region_name=region_name,
+                aws_access_key_id=aws_access_key_id,
+                aws_secret_access_key=aws_secret_access_key
+            )
+
+            copy_source = {
+                'Bucket': 'source-abrar-s3',
+                'Key': file_name
+            }
+
+            # Specify the destination folder/key in the destination bucket
+            destination_key = 'destination-s3-bucket-ds/' + file_name
+
+            s3.meta.client.copy(copy_source, 'destination-s3-bucket-ds', destination_key)
+
+            print(f"File '{file_name}' copied from 'demo-show-s3' to 'destinationfoldera'")
+            return {
+                'statusCode': 200,
+                'body': 'File copied successfully'
+            }
+        else:
+            print("No S3 event records found")
+            return {
+                'statusCode': 400,
+                'body': 'No S3 event records found'
+            }
+    except Exception as e:
+        print(f"Error: {e}")
+        return {
+            'statusCode': 500,
+            'body': 'Error processing S3 event'
+        }
+
